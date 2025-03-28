@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label"
 import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
 import { MainNav } from "@/components/main-nav"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation" 
 
 export default function SignupPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,6 +40,7 @@ export default function SignupPage() {
     }
     localStorage.setItem("user", JSON.stringify(userData))
     alert("Account created successfully!")
+    router.push("/login")
   }
 
   return (

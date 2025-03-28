@@ -49,10 +49,7 @@ export default function HistoryPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Button>
-              <Download className="mr-2 h-4 w-4" />
-              Export All
-            </Button>
+
           </motion.div>
         </div>
         <motion.div
