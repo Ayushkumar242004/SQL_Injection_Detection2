@@ -12,11 +12,10 @@ import { Label } from "@/components/ui/label"
 import { AlertCircle, CheckCircle, Download, Upload } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { motion } from "framer-motion"
 
 export function QueryValidator() {
   const [query, setQuery] = useState("")
-  const [file, setFile] = useState<File | null>(null)
+  // const [file, setFile] = useState<File | null>(null)
   const [model, setModel] = useState("sqliv")
   const [isValidating, setIsValidating] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -25,11 +24,11 @@ export function QueryValidator() {
     message: string
   }>({ isMalicious: null, message: "" })
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0])
-    }
-  }
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files.length > 0) {
+  //     setFile(e.target.files[0])
+  //   }
+  // }
 
   const validateQuery = async () => {
     if (!query.trim()) return
@@ -43,7 +42,7 @@ export function QueryValidator() {
     }, 200)
   
     try {
-      const response = await fetch("http://127.0.0.1:5000/predict", {
+      const response = await fetch("https://m-s-973a.onrender.com/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query, model }),
@@ -78,36 +77,36 @@ export function QueryValidator() {
   
   
 
-  const validateFile = async () => {
-    if (!file) return
+  // const validateFile = async () => {
+  //   if (!file) return
 
-    setIsValidating(true)
-    setProgress(0)
+  //   setIsValidating(true)
+  //   setProgress(0)
 
-    // Simulate progress
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(interval)
-          return prev
-        }
-        return prev + 5
-      })
-    }, 100)
+  //   // Simulate progress
+  //   const interval = setInterval(() => {
+  //     setProgress((prev) => {
+  //       if (prev >= 90) {
+  //         clearInterval(interval)
+  //         return prev
+  //       }
+  //       return prev + 5
+  //     })
+  //   }, 100)
 
-    // Simulate file processing
-    setTimeout(() => {
-      clearInterval(interval)
-      setProgress(100)
+  //   // Simulate file processing
+  //   setTimeout(() => {
+  //     clearInterval(interval)
+  //     setProgress(100)
 
-      setResult({
-        isMalicious: Math.random() > 0.5, // Random result for demo
-        message: "File processed. See detailed results in the download.",
-      })
+  //     setResult({
+  //       isMalicious: Math.random() > 0.5, // Random result for demo
+  //       message: "File processed. See detailed results in the download.",
+  //     })
 
-      setIsValidating(false)
-    }, 3000)
-  }
+  //     setIsValidating(false)
+  //   }, 3000)
+  // }
 
   const downloadResults = () => {
     if (result.isMalicious === null) return
@@ -189,14 +188,14 @@ Date: ${new Date().toLocaleString()}
                     </p>
                     {/* <p className="text-xs text-muted-foreground">SQL files only (*.sql)</p> */}
                   </div>
-                  <input id="sql-file" type="file" accept=".sql" className="hidden" onChange={handleFileChange} />
+                  {/* <input id="sql-file" type="file" accept=".sql" className="hidden" onChange={handleFileChange} /> */}
                 </label>
               </div>
-              {file && <p className="text-sm text-muted-foreground mt-2">Selected file: {file.name}</p>}
+              {/* {file && <p className="text-sm text-muted-foreground mt-2">Selected file: {file.name}</p>} */}
             </div>
-            <Button onClick={validateFile} disabled={isValidating || !file} className="w-full">
+            {/* <Button onClick={validateFile} disabled={isValidating || !file} className="w-full">
               Validate File
-            </Button>
+            </Button> */}
           </TabsContent>
         </Tabs>
 
@@ -220,7 +219,7 @@ Date: ${new Date().toLocaleString()}
           variant="outline"
           onClick={() => {
             setQuery("")
-            setFile(null)
+            // setFile(null)
             setResult({ isMalicious: null, message: "" })
           }}
         >
@@ -234,4 +233,3 @@ Date: ${new Date().toLocaleString()}
     </Card>
   )
 }
-
