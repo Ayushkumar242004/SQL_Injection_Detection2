@@ -1,81 +1,100 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { AlertCircle, CheckCircle, Download, Upload } from "lucide-react"
-import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { AlertCircle, CheckCircle, Download, Upload } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function QueryValidator() {
-  const [query, setQuery] = useState("")
+  const [query, setQuery] = useState("");
   // const [file, setFile] = useState<File | null>(null)
-  const [model, setModel] = useState("sqliv")
-  const [isValidating, setIsValidating] = useState(false)
-  const [progress, setProgress] = useState(0)
+  const [model, setModel] = useState("model_1");
+  const [isValidating, setIsValidating] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<{
-    isMalicious: boolean | null
-    message: string
-  }>({ isMalicious: null, message: "" })
-
-  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files && e.target.files.length > 0) {
-  //     setFile(e.target.files[0])
-  //   }
-  // }
+    isMalicious: boolean | null;
+    message: string;
+  }>({ isMalicious: null, message: "" });
 
   const validateQuery = async () => {
-    if (!query.trim()) return
-  
-    setIsValidating(true)
-    setProgress(0)
-  
+    if (!query.trim()) return;
+
+    setIsValidating(true);
+    setProgress(0);
+
     // Simulate progress
     const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 90 ? prev : prev + 10))
-    }, 200)
-  
+      setProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 10;
+      });
+    }, 200);
+
     try {
       const response = await fetch("https://m-s-973a.onrender.com/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query, model }),
-      })
-  
-      const data = await response.json()
-      clearInterval(interval)
-      setProgress(100)
-  
-      const isMalicious = data.prediction > 0.5
+      });
+
+      const data = await response.json();
+      console.log("API Response:", data);
+      clearInterval(interval);
+      setProgress(100);
+
+      const isMalicious = data.prediction > 0.5;
       const message = isMalicious
         ? "This query contains potential SQL injection patterns."
-        : "No obvious SQL injection patterns detected."
-  
-      setResult({ isMalicious, message })
-  
+        : "No obvious SQL injection patterns detected.";
+
+      setResult({ isMalicious, message });
+
       // Create a new history entry
-      const newHistoryEntry = { query, model, isMalicious, message, timestamp: new Date().toISOString() }
-  
+      const newHistoryEntry = {
+        query,
+        model,
+        isMalicious,
+        message,
+        timestamp: new Date().toISOString(),
+      };
+
       // Update localStorage
-      const savedHistory = JSON.parse(localStorage.getItem("queryValidationHistory") || "[]")
-      savedHistory.push(newHistoryEntry)
-      localStorage.setItem("queryValidationHistory", JSON.stringify(savedHistory))
-  
+      const savedHistory = JSON.parse(
+        localStorage.getItem("queryValidationHistory") || "[]"
+      );
+      savedHistory.push(newHistoryEntry);
+      localStorage.setItem(
+        "queryValidationHistory",
+        JSON.stringify(savedHistory)
+      );
     } catch (error) {
-      console.error("Error validating query:", error)
-      setResult({ isMalicious: null, message: "Error validating query. Please try again." })
+      console.error("Error validating query:", error);
+      setResult({
+        isMalicious: null,
+        message: "Error validating query. Please try again.",
+      });
     } finally {
-      setIsValidating(false)
+      setIsValidating(false);
     }
-  }
-  
-  
+  };
 
   // const validateFile = async () => {
   //   if (!file) return
@@ -109,7 +128,7 @@ export function QueryValidator() {
   // }
 
   const downloadResults = () => {
-    if (result.isMalicious === null) return
+    if (result.isMalicious === null) return;
 
     const content = `
 SQL Query Validation Results
@@ -119,36 +138,42 @@ Query: ${query}
 Result: ${result.isMalicious ? "MALICIOUS" : "NON-MALICIOUS"}
 Details: ${result.message}
 Date: ${new Date().toLocaleString()}
-    `.trim()
+    `.trim();
 
-    const blob = new Blob([content], { type: "text/plain" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "sql-validation-result.txt"
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sql-validation-result.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle>SQL Query Validator</CardTitle>
-        <CardDescription>Validate SQL queries for potential injection vulnerabilities</CardDescription>
+        <CardDescription>
+          Validate SQL queries for potential injection vulnerabilities
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label>Select Validation Model</Label>
-          <RadioGroup defaultValue={model} onValueChange={setModel} className="flex space-x-4">
+          <RadioGroup
+            defaultValue={model}
+            onValueChange={setModel}
+            className="flex space-x-4"
+          >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="sqliv" id="sqliv" />
-              <Label htmlFor="sqliv">SQLiv</Label>
+              <RadioGroupItem value="model_1" id="model_1" />
+              <Label htmlFor="model_1">Sqliv</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="sqliv2" id="sqliv2" />
-              <Label htmlFor="sqliv2">SQLiv2 (Advanced)</Label>
+              <RadioGroupItem value="model_2" id="model_2" />
+              <Label htmlFor="model_2">Sqliv2</Label>
             </div>
           </RadioGroup>
         </div>
@@ -169,7 +194,11 @@ Date: ${new Date().toLocaleString()}
                 className="min-h-32"
               />
             </div>
-            <Button onClick={validateQuery} disabled={isValidating || !query.trim()} className="w-full">
+            <Button
+              onClick={validateQuery}
+              disabled={isValidating || !query.trim()}
+              className="w-full"
+            >
               Validate Query
             </Button>
           </TabsContent>
@@ -184,7 +213,8 @@ Date: ${new Date().toLocaleString()}
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <Upload className="w-8 h-8 mb-3 text-muted-foreground" />
                     <p className="mb-2 text-sm text-muted-foreground">
-                      <span className="font-semibold">Click to upload</span> or drag and drop
+                      <span className="font-semibold">Click to upload</span> or
+                      drag and drop
                     </p>
                     {/* <p className="text-xs text-muted-foreground">SQL files only (*.sql)</p> */}
                   </div>
@@ -208,8 +238,16 @@ Date: ${new Date().toLocaleString()}
 
         {result.isMalicious !== null && (
           <Alert variant={result.isMalicious ? "destructive" : "default"}>
-            {result.isMalicious ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
-            <AlertTitle>{result.isMalicious ? "Malicious Query Detected" : "Query Appears Safe"}</AlertTitle>
+            {result.isMalicious ? (
+              <AlertCircle className="h-4 w-4" />
+            ) : (
+              <CheckCircle className="h-4 w-4" />
+            )}
+            <AlertTitle>
+              {result.isMalicious
+                ? "Malicious Query Detected"
+                : "Query Appears Safe"}
+            </AlertTitle>
             <AlertDescription>{result.message}</AlertDescription>
           </Alert>
         )}
@@ -218,18 +256,22 @@ Date: ${new Date().toLocaleString()}
         <Button
           variant="outline"
           onClick={() => {
-            setQuery("")
+            setQuery("");
             // setFile(null)
-            setResult({ isMalicious: null, message: "" })
+            setResult({ isMalicious: null, message: "" });
           }}
         >
           Clear
         </Button>
-        <Button onClick={downloadResults} disabled={result.isMalicious === null} variant="secondary">
+        <Button
+          onClick={downloadResults}
+          disabled={result.isMalicious === null}
+          variant="secondary"
+        >
           <Download className="mr-2 h-4 w-4" />
           Download Results
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }
